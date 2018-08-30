@@ -30,6 +30,17 @@
                 <input id="adicionarFilhoBtn" type="button" value="Adicionar Filho" class="btn btn-primary" />
             </div>
 
+            <table id="paiFilhoCreateListaTable" class="table table-hover" style="display:none">
+                <thead>
+                    <tr>
+                        <th>Pai</th>
+                        <th>Filho</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
             <div class="form-group">
                 <input id="salvarBtn" type="button" value="Salvar" class="btn btn-default" />
             </div>
@@ -48,38 +59,68 @@
 <script type="text/javascript">
     $(document).ready(function () {
 
-        var familiares = [];
-        exibirFamiliares();
+        var paiFilhoCreateLista = [];
 
         $('#adicionarFilhoBtn').click(function () {
             var nomePai = $('#NomePai').val();
             var nomeFilho = $('#NomeFilho').val();
 
-            var parente = {
+            var paiFilhoCreate = {
                 NomePai: nomePai,
                 NomeFilho: nomeFilho
             };
 
-            familiares.push(parente);
+            paiFilhoCreateLista.push(paiFilhoCreate);
 
-            exibirFamiliares();
+            adicionaPaiFilhoCreateListaTable(paiFilhoCreate);
         });
 
-        function exibirFamiliares() {
-            alert('quantidade: ' + familiares.length);
+        function adicionaPaiFilhoCreateListaTable(paiFilhoCreate) {
+            if (paiFilhoCreateLista.length > 0) {
+                $('#paiFilhoCreateListaTable').show();
+            } else {
+                $('#paiFilhoCreateListaTable').hide();
+            }
+
+            $('#paiFilhoCreateListaTable > tbody:last-child')
+                .append(
+                    '<tr>' +
+                    '<td>' + paiFilhoCreate.NomePai + '</td>' +
+                    '<td>' + paiFilhoCreate.NomeFilho + '</td>' +
+                    '<td>Excluir</td>' +
+                    '</tr>');
         }
 
         $("#salvarBtn").click(function () {
             $.ajax({
                 method: "POST",
                 url: "@Url.Action("_Create", "Familia")",
-                data: JSON.stringify(familiares)
+                data: { model: paiFilhoCreateLista }
             })
                 .done(function (msg) {
-                    alert("Data Saved: " + msg);
+                    if (msg.success) {
+                        swal({
+                            title: "Bom trabalho!",
+                            text: "Dados salvos com sucesso!",
+                            icon: "success",
+                            button: "Ok"
+                        });
+                    } else {
+                        swal({
+                            title: "Ops!",
+                            text: "Ocorreu um erro ao tentar salvar os dados. Por favor tente novamente mais tarde!",
+                            icon: "error",
+                            button: "Ok"
+                        });
+                    }
                 })
                 .fail(function (jqXHR, textStatus) {
-                    alert("Request failed: " + textStatus);
+                    swal({
+                        title: "Ops!",
+                        text: "Ocorreu um erro ao tentar salvar os dados. Por favor tente novamente mais tarde! (" + textStatus + ")",
+                        icon: "error",
+                        button: "Ok"
+                    });
                 });
         });
 
